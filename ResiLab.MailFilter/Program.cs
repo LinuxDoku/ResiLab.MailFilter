@@ -53,6 +53,7 @@ namespace ResiLab.MailFilter {
                     var toMove = new Dictionary<string, List<UniqueId>>();
                     var markAsRead = new List<UniqueId>();
 
+                    // process unread messages
                     foreach (var unreadMessageUid in unreadMessageUids) {
                         var message = inbox.GetMessage(unreadMessageUid);
 
@@ -70,13 +71,17 @@ namespace ResiLab.MailFilter {
                         }
                     }
 
+                    // mark as read
+                    if (markAsRead.Any()) {
+                        inbox.AddFlags(markAsRead, MessageFlags.Seen, true);
+                    }
+
+                    // move to destination
                     if (toMove.Any()) {
                         // TODO: logging
                         foreach (var destination in toMove.Keys) {
                             inbox.MoveTo(toMove[destination], inbox.GetSubfolder(destination));
                         }
-
-                        inbox.AddFlags(markAsRead, MessageFlags.Seen, true);
                     }
                 }
 
