@@ -1,0 +1,24 @@
+﻿{
+  "LogEnabled": true,
+  "MailBoxes": [
+    {
+      "Type": "Imap",
+      "Host": "mail.resilab.local",
+      "Username": "thebestuser",
+      "Password": "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA/YqVQygU4keEAb3Z6p0nXgQAAAACAAAAAAAQZgAAAAEAACAAAAA4+F0yttTin4lKd5CbuP+U6m4cLzPYGQqVkKMqSWGm1gAAAAAOgAAAAAIAACAAAAB5swEnfu7DDa5bWQDV5GeL+e1QLBNrho4Qv9VjmUoDqhAAAABT/y1XnQ90vMKpW7sX6/l8QAAAAOahw2WJSAJ6fjR9wSZt3si/sr/PBWWLuw4fJfeHyMsCF+zdnt71bojlwOMxVFG17EwE4VuWHzPF7dXPYs87zmc=",
+      "UseSsl": true,
+      "Rules": [
+        {
+          "Type": "SubjectEquals",
+          "Value": "Martins Test 2016",
+          "Destination": "Trash"
+        },
+        {
+          "Type": "SubjectStartsWith",
+          "Value": "****SPAM****",
+          "Destination": "Trash"
+        }
+      ]
+    }
+  ] 
+}
