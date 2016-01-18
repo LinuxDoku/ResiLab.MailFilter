@@ -90,6 +90,7 @@
   <ItemGroup>
     <Compile Include="Infrastructure\Cryptography.cs" />
     <Compile Include="Infrastructure\Logger.cs" />
+    <Compile Include="MailBoxProcessor.cs" />
     <Compile Include="Model\Configuration.cs" />
     <Compile Include="Model\MailBox.cs" />
     <Compile Include="Model\MailBoxServer.cs" />
