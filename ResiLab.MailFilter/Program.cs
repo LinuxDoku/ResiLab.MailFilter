@@ -36,6 +36,11 @@ namespace ResiLab.MailFilter {
 
                 host.RunAsLocalSystem();
                 host.StartAutomatically();
+
+                host.EnableServiceRecovery(recovery => {
+                    recovery.OnCrashOnly();
+                    recovery.RestartService(1);
+                });
             });
         }
     }
