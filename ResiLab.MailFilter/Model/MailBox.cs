@@ -1,9 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using MailKit.Security;
 
 namespace ResiLab.MailFilter.Model {
     public class MailBox {
+        private string _identifier = null;
+        private TimeSpan _interval = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// Identifier of the mailbox.
+        /// Defaults to Username@Host:Port
+        /// </summary>
+        public string Identifier {
+            get {
+                if (_identifier != null) {
+                    return _identifier;
+                }
+
+                return Username + "@" + Host + ":" + Port;
+            }
+            set { _identifier = value; }
+        }
+
         /// <summary>
         /// (Protocol) Type of the mail box.
         /// </summary>
@@ -37,7 +54,17 @@ namespace ResiLab.MailFilter.Model {
         /// <summary>
         /// Interval to execute the rules.
         /// </summary>
-        public TimeSpan Interval { get; set; }
+        public TimeSpan Interval {
+            get {
+                // protection before flooding the mail server by wrong or missing config
+                if (_interval >= TimeSpan.FromSeconds(5)) {
+                    return _interval;
+                }
+
+                return TimeSpan.FromSeconds(30); // default value
+            }
+            set { _interval = value; }
+        }
 
         /// <summary>
         /// Rules to apply on this mailbox.

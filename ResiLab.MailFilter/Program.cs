@@ -1,36 +1,40 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Framework.Configuration;
 using ResiLab.MailFilter.Infrastructure;
-using ResiLab.MailFilter.Model;
+using Topshelf;
 
 namespace ResiLab.MailFilter {
     public class Program {
         public static void Main(string[] args) {
             Logger.Setup();
-    
-            try {
-                if (args.Length > 0) {
-                    if (args.First() == "crypt") {
-                        var toCrypt = string.Join(" ", args.Skip(1));
-                        Console.WriteLine("Crypted:");
-                        Console.WriteLine(Cryptography.Encrypt(toCrypt));
-                        return;
-                    }
+            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
+                Logger.Error("Unhandled exception occurred!", eventArgs.ExceptionObject as Exception);
+            };
+            
+            // cli
+            if (args.Length > 0) {
+                if (args.First() == "crypt") {
+                    var toCrypt = string.Join(" ", args.Skip(1));
+                    Console.WriteLine("Crypted:");
+                    Console.WriteLine(Cryptography.Encrypt(toCrypt));
+                    return;
                 }
-
-                // configuration
-                var configurationBuilder = new ConfigurationBuilder().AddJsonFile("config.json").Build();
-                var configuration = new Configuration();
-                configurationBuilder.Bind(configuration);
-
-                // do the dirty work
-                foreach (var mailBox in configuration.MailBoxes) {
-                    MailBoxProcessor.Process(mailBox);
-                }
-            } catch (Exception ex) {
-                Logger.Error("An error occurred!", ex);
             }
+
+            // service host
+            HostFactory.Run(host => {
+                host.Service<MailFilterService>(setup => {
+                    setup.ConstructUsing(name => new MailFilterService());
+
+                    setup.WhenStarted(service => service.Start());
+                    setup.WhenStopped(service => service.Stop());
+                });
+
+                host.RunAsLocalSystem();
+                host.SetServiceName("ResiLabMailFilter");
+                host.SetDisplayName("ResiLab Mail Filter");
+                host.SetDescription("Filter MailBoxes with Rules.");
+            });
         }
     }
 }
