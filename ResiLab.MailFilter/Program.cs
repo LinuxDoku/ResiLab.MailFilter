@@ -30,10 +30,12 @@ namespace ResiLab.MailFilter {
                     setup.WhenStopped(service => service.Stop());
                 });
 
-                host.RunAsLocalSystem();
                 host.SetServiceName("ResiLabMailFilter");
                 host.SetDisplayName("ResiLab Mail Filter");
                 host.SetDescription("Filter MailBoxes with Rules.");
+
+                host.RunAsLocalSystem();
+                host.StartAutomatically();
             });
         }
     }
