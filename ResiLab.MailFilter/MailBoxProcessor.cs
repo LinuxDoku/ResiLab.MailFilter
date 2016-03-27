@@ -12,7 +12,9 @@ namespace ResiLab.MailFilter {
         public static void Process(MailBox mailBox) {
             using (var client = new ImapClient()) {
                 client.Connect(mailBox.Host, mailBox.Port, mailBox.UseSsl);
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                if (client.AuthenticationMechanisms.Contains("XOAUTH2")) {
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+                }
                 client.Authenticate(mailBox.Username, Cryptography.Decrypt(mailBox.Password));
 
                 var inbox = client.Inbox as ImapFolder;
@@ -65,15 +67,17 @@ namespace ResiLab.MailFilter {
         }
 
         private static bool IsRuleMatching(MimeMessage message, Rule rule) {
+            var fromAddress = message.From.Cast<MailboxAddress>().First().Address;
+
             switch (rule.Type) {
                 case RuleType.SenderEquals:
-                    return message.Sender.Address == rule.Value;
+                    return fromAddress == rule.Value;
 
                 case RuleType.SenderContains:
-                    return message.Sender.Address.Contains(rule.Value);
+                    return fromAddress.Contains(rule.Value);
 
                 case RuleType.SenderEndsWith:
-                    return message.Sender.Address.EndsWith(rule.Value);
+                    return fromAddress.EndsWith(rule.Value);
 
                 case RuleType.SubjectContains:
                     return message.Subject.Contains(rule.Value);
