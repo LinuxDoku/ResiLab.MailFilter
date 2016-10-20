@@ -17,6 +17,6 @@ namespace ResiLab.MailFilter.Infrastructure {
             Task.Run(wrappedAction, canellationToken.Token);
 
             return canellationToken;
-        } 
+        }
     }
 }

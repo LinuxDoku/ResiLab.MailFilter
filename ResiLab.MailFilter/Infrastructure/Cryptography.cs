@@ -9,7 +9,8 @@ namespace ResiLab.MailFilter.Infrastructure {
         }
 
         public static string Decrypt(string valueBase64) {
-            return ToString(ProtectedData.Unprotect(ToBytesFromBase64(valueBase64), null, DataProtectionScope.LocalMachine));
+            return
+                ToString(ProtectedData.Unprotect(ToBytesFromBase64(valueBase64), null, DataProtectionScope.LocalMachine));
         }
 
         private static string ToString(byte[] bytes) {

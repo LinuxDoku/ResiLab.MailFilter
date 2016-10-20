@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace ResiLab.MailFilter.Model {
     public class MailBox {
-        private string _identifier = null;
+        private string _identifier;
         private TimeSpan _interval = TimeSpan.FromSeconds(30);
 
         /// <summary>
-        /// Identifier of the mailbox.
-        /// Defaults to Username@Host:Port
+        ///     Identifier of the mailbox.
+        ///     Defaults to Username@Host:Port
         /// </summary>
         public string Identifier {
             get {
@@ -22,37 +22,37 @@ namespace ResiLab.MailFilter.Model {
         }
 
         /// <summary>
-        /// (Protocol) Type of the mail box.
+        ///     (Protocol) Type of the mail box.
         /// </summary>
         public MailBoxServer Type { get; set; }
 
         /// <summary>
-        /// Hostname.
+        ///     Hostname.
         /// </summary>
         public string Host { get; set; }
 
         /// <summary>
-        /// Port
+        ///     Port
         /// </summary>
         public int Port { get; set; } = 993;
 
         /// <summary>
-        /// Use ssl to connect to the server.
+        ///     Use ssl to connect to the server.
         /// </summary>
         public bool UseSsl { get; set; }
 
         /// <summary>
-        /// Username of the mailbox.
+        ///     Username of the mailbox.
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        /// Password to access the mailbox.
+        ///     Password to access the mailbox.
         /// </summary>
         public string Password { get; set; }
 
         /// <summary>
-        /// Interval to execute the rules.
+        ///     Interval to execute the rules.
         /// </summary>
         public TimeSpan Interval {
             get {
@@ -67,8 +67,13 @@ namespace ResiLab.MailFilter.Model {
         }
 
         /// <summary>
-        /// Rules to apply on this mailbox.
+        ///     Rules to apply on this mailbox.
         /// </summary>
         public List<Rule> Rules { get; set; } = new List<Rule>();
+
+        /// <summary>
+        ///     Spam Filter configuration.
+        /// </summary>
+        public Spam Spam { get; set; } = new Spam();
     }
 }

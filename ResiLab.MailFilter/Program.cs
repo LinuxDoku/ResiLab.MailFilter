@@ -7,10 +7,11 @@ namespace ResiLab.MailFilter {
     public class Program {
         public static void Main(string[] args) {
             Logger.Setup();
-            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
-                Logger.Error("Unhandled exception occurred!", eventArgs.ExceptionObject as Exception);
-            };
-            
+            AppDomain.CurrentDomain.UnhandledException +=
+                (sender, eventArgs) => {
+                    Logger.Error("Unhandled exception occurred!", eventArgs.ExceptionObject as Exception);
+                };
+
             // cli
             if (args.Length > 0) {
                 if (args.First() == "crypt") {

@@ -3,12 +3,12 @@
 namespace ResiLab.MailFilter.Model {
     public class Configuration {
         /// <summary>
-        /// If logging all rule executions is enabled.
+        ///     If logging all rule executions is enabled.
         /// </summary>
         public bool LogEnabled { get; set; } = true;
 
         /// <summary>
-        /// Mailboxes.
+        ///     Mailboxes.
         /// </summary>
         public List<MailBox> MailBoxes { get; set; } = new List<MailBox>();
     }

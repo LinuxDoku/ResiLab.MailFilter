@@ -19,7 +19,7 @@ namespace ResiLab.MailFilter.Infrastructure {
             Trace.TraceWarning(message);
         }
 
-        public static void Error(string message, Exception exception=null) {
+        public static void Error(string message, Exception exception = null) {
             Trace.TraceError("{0}{1}{2}", message, Environment.NewLine, exception);
         }
     }

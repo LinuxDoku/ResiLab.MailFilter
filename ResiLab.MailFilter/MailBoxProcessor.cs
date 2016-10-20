@@ -1,10 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
+using Newtonsoft.Json;
 using ResiLab.MailFilter.Infrastructure;
+using ResiLab.MailFilter.Learning;
+using ResiLab.MailFilter.Learning.Model;
 using ResiLab.MailFilter.Model;
 
 namespace ResiLab.MailFilter {
@@ -18,47 +25,73 @@ namespace ResiLab.MailFilter {
                 client.Authenticate(mailBox.Username, Cryptography.Decrypt(mailBox.Password));
 
                 var inbox = client.Inbox as ImapFolder;
-                inbox.Open(FolderAccess.ReadWrite);
-                inbox.Status(StatusItems.Unread);
 
-                if (inbox.Unread > 0) {
-                    var unreadMessageUids = inbox.Search(SearchQuery.NotSeen);
-                    var toMove = new Dictionary<string, List<UniqueId>>();
-                    var markAsRead = new List<UniqueId>();
+                // process the analysis
+                ProcessAnalysis(mailBox, inbox);
 
-                    // process unread messages
-                    foreach (var unreadMessageUid in unreadMessageUids) {
-                        var message = inbox.GetMessage(unreadMessageUid);
+                // process rules
+                ProcessRules(mailBox, inbox);
 
-                        var matchingRule = GetMatchingRule(message, mailBox);
-                        if (matchingRule != null) {
-                            if (!toMove.ContainsKey(matchingRule.Destination)) {
-                                toMove.Add(matchingRule.Destination, new List<UniqueId>());
-                            }
+                client.Disconnect(true);
+            }
+        }
 
-                            toMove[matchingRule.Destination].Add(unreadMessageUid);
+        private static void ProcessAnalysis(MailBox mailBox, ImapFolder inbox) {
+            if ((mailBox.Spam == null) || (mailBox.Spam.EnableSpamProtection == false)) {
+                return;
+            }
 
-                            if (matchingRule.MarkAsRead) {
-                                markAsRead.Add(unreadMessageUid);
-                            }
+            var dataSet = ReadLearningDataSet(mailBox);
+            if (dataSet.LastUpdate >= DateTime.Now.Subtract(TimeSpan.FromMinutes(mailBox.Spam.AnalysisInterval))) {
+                return;
+            }
+
+            var targetFolder = inbox.GetSubfolder(mailBox.Spam.Target);
+            targetFolder.Open(FolderAccess.ReadOnly);
+
+            MailBoxFolderAnalyzer.Analyze(targetFolder, dataSet);
+
+            SaveLearningDataSet(mailBox, dataSet);
+        }
+
+        private static void ProcessRules(MailBox mailBox, ImapFolder inbox) {
+            inbox.Open(FolderAccess.ReadWrite);
+            inbox.Status(StatusItems.Unread);
+
+            if (inbox.Unread > 0) {
+                var unreadMessageUids = inbox.Search(SearchQuery.NotSeen);
+                var toMove = new Dictionary<string, List<UniqueId>>();
+                var markAsRead = new List<UniqueId>();
+
+                // process unread messages
+                foreach (var unreadMessageUid in unreadMessageUids) {
+                    var message = inbox.GetMessage(unreadMessageUid);
+
+                    var matchingRule = GetMatchingRule(message, mailBox);
+                    if (matchingRule != null) {
+                        if (!toMove.ContainsKey(matchingRule.Destination)) {
+                            toMove.Add(matchingRule.Destination, new List<UniqueId>());
                         }
-                    }
 
-                    // mark as read
-                    if (markAsRead.Any()) {
-                        inbox.AddFlags(markAsRead, MessageFlags.Seen, true);
-                    }
+                        toMove[matchingRule.Destination].Add(unreadMessageUid);
 
-                    // move to destination
-                    if (toMove.Any()) {
-                        // TODO: logging
-                        foreach (var destination in toMove.Keys) {
-                            inbox.MoveTo(toMove[destination], inbox.GetSubfolder(destination));
+                        if (matchingRule.MarkAsRead) {
+                            markAsRead.Add(unreadMessageUid);
                         }
                     }
                 }
 
-                client.Disconnect(true);
+                // mark as read
+                if (markAsRead.Any()) {
+                    inbox.AddFlags(markAsRead, MessageFlags.Seen, true);
+                }
+
+                // move to destination
+                if (toMove.Any()) {
+                    foreach (var destination in toMove.Keys) {
+                        inbox.MoveTo(toMove[destination], inbox.GetSubfolder(destination));
+                    }
+                }
             }
         }
 
@@ -93,6 +126,28 @@ namespace ResiLab.MailFilter {
             }
 
             return false;
+        }
+
+        private static LearningDataSet ReadLearningDataSet(MailBox mailBox) {
+            var fileName = GetHash(mailBox);
+
+            if (File.Exists(fileName) == false) {
+                return new LearningDataSet {
+                    Identifier = mailBox.Identifier
+                };
+            }
+
+            var json = Cryptography.Decrypt(File.ReadAllText(fileName));
+            return JsonConvert.DeserializeObject<LearningDataSet>(json);
+        }
+
+        private static void SaveLearningDataSet(MailBox mailBox, LearningDataSet dataSet) {
+            var json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
+            File.WriteAllText(GetHash(mailBox), Cryptography.Encrypt(json));
+        }
+
+        private static string GetHash(MailBox mailBox) {
+            return BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(mailBox.Identifier)));
         }
     }
 }
