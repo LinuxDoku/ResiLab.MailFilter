@@ -65,7 +65,7 @@ Following rule types are implemented:
 - SubjectBeginsWith
 - SubjectEndsWith
 
-## How works the spam protection feature
+## How the spam protection feature works
 An analyzer scans the spam folder in your mail box periodically and uses this learning
 data to generate new rules at runtime in the mailbox processor.
 At the moment the sender address and subject of these mails are used. Some other data 
