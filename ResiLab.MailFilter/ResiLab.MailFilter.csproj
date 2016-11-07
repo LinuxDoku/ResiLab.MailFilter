@@ -99,6 +99,7 @@
     <Compile Include="Learning\MailBoxFolderAnalyzer.cs" />
     <Compile Include="Learning\Model\LearningDataSet.cs" />
     <Compile Include="Learning\Parser\UrlParser.cs" />
+    <Compile Include="Learning\RuleGenerator.cs" />
     <Compile Include="MailBoxProcessor.cs" />
     <Compile Include="MailFilterService.cs" />
     <Compile Include="Configuration\Configuration.cs" />

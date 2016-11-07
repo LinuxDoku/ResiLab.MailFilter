@@ -18,9 +18,12 @@ using ResiLab.MailFilter.Learning.Model;
 namespace ResiLab.MailFilter {
     public class MailBoxProcessor {
         private readonly MailBox _mailBox;
+        private readonly List<Rule> _rules;
+        private LearningDataSet _learningData;
 
         public MailBoxProcessor(MailBox mailBox) {
             _mailBox = mailBox;
+            _rules = new List<Rule>();
         }
 
         public void Process() {
@@ -31,6 +34,9 @@ namespace ResiLab.MailFilter {
 
                 // process the analysis
                 ProcessAnalysis(inbox);
+
+                // add rules from different sources to this processor
+                AddRules();
 
                 // process rules
                 ProcessRules(inbox);
@@ -47,22 +53,30 @@ namespace ResiLab.MailFilter {
             client.Authenticate(_mailBox.Username, Cryptography.Decrypt(_mailBox.Password));
         }
 
-        private void ProcessAnalysis(ImapFolder inbox) {
+        private void ProcessAnalysis(IMailFolder inbox) {
             if ((_mailBox.Spam == null) || (_mailBox.Spam.EnableSpamProtection == false)) {
                 return;
             }
 
-            var dataSet = ReadLearningDataSet();
-            if (dataSet.LastUpdate >= DateTime.Now.Subtract(TimeSpan.FromMinutes(_mailBox.Spam.AnalysisInterval))) {
-                return;
+            _learningData = ReadLearningDataSet();
+            var needToUpdateData = _learningData.LastUpdate < DateTime.Now.Subtract(TimeSpan.FromMinutes(_mailBox.Spam.AnalysisInterval));
+            if (needToUpdateData) {
+                var targetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
+                targetFolder.Open(FolderAccess.ReadOnly);
+
+                MailBoxFolderAnalyzer.Analyze(targetFolder, _learningData);
+
+                SaveLearningDataSet(_learningData);
             }
+        }
 
-            var targetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
-            targetFolder.Open(FolderAccess.ReadOnly);
+        private void AddRules() {
+            // add user configured rules
+            _rules.AddRange(_mailBox.Rules);
 
-            MailBoxFolderAnalyzer.Analyze(targetFolder, dataSet);
-
-            SaveLearningDataSet(dataSet);
+            // generate rules based on analysis data
+            var ruleGenerator = new RuleGenerator(_learningData, _mailBox.Spam.Target);
+            _rules.AddRange(ruleGenerator.Generate());
         }
 
         private void ProcessRules(IMailFolder inbox) {
@@ -78,7 +92,7 @@ namespace ResiLab.MailFilter {
                 foreach (var unreadMessageUid in unreadMessageUids) {
                     var message = inbox.GetMessage(unreadMessageUid);
 
-                    var matchingRule = GetMatchingRule(message, _mailBox);
+                    var matchingRule = GetMatchingRule(message);
                     if (matchingRule != null) {
                         if (!toMove.ContainsKey(matchingRule.Destination)) {
                             toMove.Add(matchingRule.Destination, new List<UniqueId>());
@@ -106,8 +120,8 @@ namespace ResiLab.MailFilter {
             }
         }
 
-        private Rule GetMatchingRule(MimeMessage message, MailBox mailBox) {
-            return mailBox.Rules.FirstOrDefault(rule => RuleMatcher.IsRuleMatching(message, rule));
+        private Rule GetMatchingRule(MimeMessage message) {
+            return _rules.FirstOrDefault(rule => RuleMatcher.IsRuleMatching(message, rule));
         }
         
         private LearningDataSet ReadLearningDataSet() {
