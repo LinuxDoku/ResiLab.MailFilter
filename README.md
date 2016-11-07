@@ -59,7 +59,6 @@ Following rule types are implemented:
 - SenderEquals
 - SenderContains
 - SenderEndsWith
-
 - SubjectEquals
 - SubjectContains
 - SubjectBeginsWith
