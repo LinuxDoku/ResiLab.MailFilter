@@ -35,7 +35,7 @@ copy the output string (without the spaces) to the config file.
 To enable the spam protection simply add this to your configuration:
 
 ```json
-Spam": {
+"Spam": {
     "EnableSpamProtection": true,
     "Target": "Spam"
 }
@@ -44,7 +44,7 @@ The target folder is used as the source folder for the learning process and also
 detected spam messages.
 
 ### Custom Rules
-Custom rules are configured like this:
+Custom rules are configured like this in the `Rules` array of the configuration file:
 
 ```json
 {
@@ -59,13 +59,12 @@ Following rule types are implemented:
 - SenderEquals
 - SenderContains
 - SenderEndsWith
-
 - SubjectEquals
 - SubjectContains
 - SubjectBeginsWith
 - SubjectEndsWith
 
-## How works the spam protection feature
+## How the spam protection feature works
 An analyzer scans the spam folder in your mail box periodically and uses this learning
 data to generate new rules at runtime in the mailbox processor.
 At the moment the sender address and subject of these mails are used. Some other data 
