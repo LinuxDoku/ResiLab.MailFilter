@@ -35,7 +35,7 @@ copy the output string (without the spaces) to the config file.
 To enable the spam protection simply add this to your configuration:
 
 ```json
-Spam": {
+"Spam": {
     "EnableSpamProtection": true,
     "Target": "Spam"
 }
@@ -44,7 +44,7 @@ The target folder is used as the source folder for the learning process and also
 detected spam messages.
 
 ### Custom Rules
-Custom rules are configured like this:
+Custom rules are configured like this in the `Rules` array of the configuration file:
 
 ```json
 {
