@@ -26,8 +26,10 @@ namespace ResiLab.MailFilter {
             // do the dirty work
             foreach (var mailBox in configuration.MailBoxes) {
                 var cancellationTokenSource = Scheduler.Interval(mailBox.Interval, () => {
+                    var mailBoxProcessor = new MailBoxProcessor(mailBox);
+
                     try {
-                        MailBoxProcessor.Process(mailBox);
+                        mailBoxProcessor.Process();
                     }
                     catch (Exception ex) {
                         Logger.Error($"Could not process the MailBox {mailBox.Identifier}!", ex);

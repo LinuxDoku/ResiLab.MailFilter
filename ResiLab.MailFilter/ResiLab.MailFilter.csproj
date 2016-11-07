@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filter\RuleMatcher.cs" />
     <Compile Include="Infrastructure\Cryptography.cs" />
     <Compile Include="Infrastructure\Extensions\ListExtensions.cs" />
     <Compile Include="Infrastructure\Logger.cs" />

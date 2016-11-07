@@ -10,51 +10,62 @@ using MailKit.Search;
 using MimeKit;
 using Newtonsoft.Json;
 using ResiLab.MailFilter.Configuration;
+using ResiLab.MailFilter.Filter;
 using ResiLab.MailFilter.Infrastructure;
 using ResiLab.MailFilter.Learning;
 using ResiLab.MailFilter.Learning.Model;
 
 namespace ResiLab.MailFilter {
     public class MailBoxProcessor {
-        public static void Process(MailBox mailBox) {
+        private readonly MailBox _mailBox;
+
+        public MailBoxProcessor(MailBox mailBox) {
+            _mailBox = mailBox;
+        }
+
+        public void Process() {
             using (var client = new ImapClient()) {
-                client.Connect(mailBox.Host, mailBox.Port, mailBox.UseSsl);
-                if (client.AuthenticationMechanisms.Contains("XOAUTH2")) {
-                    client.AuthenticationMechanisms.Remove("XOAUTH2");
-                }
-                client.Authenticate(mailBox.Username, Cryptography.Decrypt(mailBox.Password));
+                Connect(client);
 
                 var inbox = client.Inbox as ImapFolder;
 
                 // process the analysis
-                ProcessAnalysis(mailBox, inbox);
+                ProcessAnalysis(inbox);
 
                 // process rules
-                ProcessRules(mailBox, inbox);
+                ProcessRules(inbox);
 
                 client.Disconnect(true);
             }
         }
 
-        private static void ProcessAnalysis(MailBox mailBox, ImapFolder inbox) {
-            if ((mailBox.Spam == null) || (mailBox.Spam.EnableSpamProtection == false)) {
+        private void Connect(MailService client) {
+            client.Connect(_mailBox.Host, _mailBox.Port, _mailBox.UseSsl);
+            if (client.AuthenticationMechanisms.Contains("XOAUTH2")) {
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+            }
+            client.Authenticate(_mailBox.Username, Cryptography.Decrypt(_mailBox.Password));
+        }
+
+        private void ProcessAnalysis(ImapFolder inbox) {
+            if ((_mailBox.Spam == null) || (_mailBox.Spam.EnableSpamProtection == false)) {
                 return;
             }
 
-            var dataSet = ReadLearningDataSet(mailBox);
-            if (dataSet.LastUpdate >= DateTime.Now.Subtract(TimeSpan.FromMinutes(mailBox.Spam.AnalysisInterval))) {
+            var dataSet = ReadLearningDataSet();
+            if (dataSet.LastUpdate >= DateTime.Now.Subtract(TimeSpan.FromMinutes(_mailBox.Spam.AnalysisInterval))) {
                 return;
             }
 
-            var targetFolder = inbox.GetSubfolder(mailBox.Spam.Target);
+            var targetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
             targetFolder.Open(FolderAccess.ReadOnly);
 
             MailBoxFolderAnalyzer.Analyze(targetFolder, dataSet);
 
-            SaveLearningDataSet(mailBox, dataSet);
+            SaveLearningDataSet(dataSet);
         }
 
-        private static void ProcessRules(MailBox mailBox, ImapFolder inbox) {
+        private void ProcessRules(IMailFolder inbox) {
             inbox.Open(FolderAccess.ReadWrite);
             inbox.Status(StatusItems.Unread);
 
@@ -67,7 +78,7 @@ namespace ResiLab.MailFilter {
                 foreach (var unreadMessageUid in unreadMessageUids) {
                     var message = inbox.GetMessage(unreadMessageUid);
 
-                    var matchingRule = GetMatchingRule(message, mailBox);
+                    var matchingRule = GetMatchingRule(message, _mailBox);
                     if (matchingRule != null) {
                         if (!toMove.ContainsKey(matchingRule.Destination)) {
                             toMove.Add(matchingRule.Destination, new List<UniqueId>());
@@ -95,45 +106,16 @@ namespace ResiLab.MailFilter {
             }
         }
 
-        private static Rule GetMatchingRule(MimeMessage message, MailBox mailBox) {
-            return mailBox.Rules.FirstOrDefault(rule => IsRuleMatching(message, rule));
+        private Rule GetMatchingRule(MimeMessage message, MailBox mailBox) {
+            return mailBox.Rules.FirstOrDefault(rule => RuleMatcher.IsRuleMatching(message, rule));
         }
-
-        private static bool IsRuleMatching(MimeMessage message, Rule rule) {
-            var fromAddress = message.From.Cast<MailboxAddress>().First().Address;
-
-            switch (rule.Type) {
-                case RuleType.SenderEquals:
-                    return fromAddress == rule.Value;
-
-                case RuleType.SenderContains:
-                    return fromAddress.Contains(rule.Value);
-
-                case RuleType.SenderEndsWith:
-                    return fromAddress.EndsWith(rule.Value);
-
-                case RuleType.SubjectContains:
-                    return message.Subject.Contains(rule.Value);
-
-                case RuleType.SubjectEquals:
-                    return message.Subject == rule.Value;
-
-                case RuleType.SubjectBeginsWith:
-                    return message.Subject.StartsWith(rule.Value);
-
-                case RuleType.SubjectEndsWith:
-                    return message.Subject.EndsWith(rule.Value);
-            }
-
-            return false;
-        }
-
-        private static LearningDataSet ReadLearningDataSet(MailBox mailBox) {
-            var fileName = GetHash(mailBox);
+        
+        private LearningDataSet ReadLearningDataSet() {
+            var fileName = GetHash(_mailBox);
 
             if (File.Exists(fileName) == false) {
                 return new LearningDataSet {
-                    Identifier = mailBox.Identifier
+                    Identifier = _mailBox.Identifier
                 };
             }
 
@@ -141,11 +123,12 @@ namespace ResiLab.MailFilter {
             return JsonConvert.DeserializeObject<LearningDataSet>(json);
         }
 
-        private static void SaveLearningDataSet(MailBox mailBox, LearningDataSet dataSet) {
+        private void SaveLearningDataSet(LearningDataSet dataSet) {
             var json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
-            File.WriteAllText(GetHash(mailBox), Cryptography.Encrypt(json));
+            File.WriteAllText(GetHash(_mailBox), Cryptography.Encrypt(json));
         }
 
+        // TODO move from here
         private static string GetHash(MailBox mailBox) {
             return BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(mailBox.Identifier)));
         }

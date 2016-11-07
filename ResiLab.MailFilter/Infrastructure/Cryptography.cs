@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace ResiLab.MailFilter.Infrastructure {
+    /// <summary>
+    /// Wrapper to enctypt and dectypt data with the ProtectedData API of .NET.
+    /// </summary>
     public static class Cryptography {
         public static string Encrypt(string value) {
             return ToBase64String(ProtectedData.Protect(ToBytes(value), null, DataProtectionScope.LocalMachine));
