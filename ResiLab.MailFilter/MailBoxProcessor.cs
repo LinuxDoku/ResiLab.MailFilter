@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
-using Newtonsoft.Json;
 using ResiLab.MailFilter.Configuration;
 using ResiLab.MailFilter.Filter;
 using ResiLab.MailFilter.Infrastructure;
@@ -18,11 +14,13 @@ using ResiLab.MailFilter.Learning.Model;
 namespace ResiLab.MailFilter {
     public class MailBoxProcessor {
         private readonly MailBox _mailBox;
+        private readonly LearningStorage _learningStorage;
         private readonly List<Rule> _rules;
         private LearningDataSet _learningData;
-
+        
         public MailBoxProcessor(MailBox mailBox) {
             _mailBox = mailBox;
+            _learningStorage = new LearningStorage(mailBox);
             _rules = new List<Rule>();
         }
 
@@ -58,7 +56,7 @@ namespace ResiLab.MailFilter {
                 return;
             }
 
-            _learningData = ReadLearningDataSet();
+            _learningData = _learningStorage.Read();
             var needToUpdateData = _learningData.LastUpdate < DateTime.Now.Subtract(TimeSpan.FromMinutes(_mailBox.Spam.AnalysisInterval));
             if (needToUpdateData) {
                 var targetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
@@ -66,7 +64,7 @@ namespace ResiLab.MailFilter {
 
                 MailBoxFolderAnalyzer.Analyze(targetFolder, _learningData);
 
-                SaveLearningDataSet(_learningData);
+                _learningStorage.Save(_learningData);
             }
         }
 
@@ -122,29 +120,6 @@ namespace ResiLab.MailFilter {
 
         private Rule GetMatchingRule(MimeMessage message) {
             return _rules.FirstOrDefault(rule => RuleMatcher.IsRuleMatching(message, rule));
-        }
-        
-        private LearningDataSet ReadLearningDataSet() {
-            var fileName = GetHash(_mailBox);
-
-            if (File.Exists(fileName) == false) {
-                return new LearningDataSet {
-                    Identifier = _mailBox.Identifier
-                };
-            }
-
-            var json = Cryptography.Decrypt(File.ReadAllText(fileName));
-            return JsonConvert.DeserializeObject<LearningDataSet>(json);
-        }
-
-        private void SaveLearningDataSet(LearningDataSet dataSet) {
-            var json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
-            File.WriteAllText(GetHash(_mailBox), Cryptography.Encrypt(json));
-        }
-
-        // TODO move from here
-        private static string GetHash(MailBox mailBox) {
-            return BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(mailBox.Identifier)));
         }
     }
 }
