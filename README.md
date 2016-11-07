@@ -34,7 +34,7 @@ copy the output string (without the spaces) to the config file.
 ### Spam Protection
 To enable the spam protection simply add this to your configuration:
 
-```javascript
+```json
 Spam": {
     "EnableSpamProtection": true,
     "Target": "Spam"
@@ -46,7 +46,7 @@ detected spam messages.
 ### Custom Rules
 Custom rules are configured like this:
 
-```javascript
+```json
 {
     "Type": "SubjectStartsWith",
     "Value": "Hey, I am spam",
