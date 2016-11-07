@@ -1,4 +1,4 @@
-﻿namespace ResiLab.MailFilter.Model {
+﻿namespace ResiLab.MailFilter.Configuration {
     public class SpamWhitelist {
         /// <summary>
         ///     Folder which contains adresses which are whitelisted.

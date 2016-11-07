@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ResiLab.MailFilter.Model {
+namespace ResiLab.MailFilter.Configuration {
     public class MailBox {
         private string _identifier;
         private TimeSpan _interval = TimeSpan.FromSeconds(30);

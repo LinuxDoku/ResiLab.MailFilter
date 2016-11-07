@@ -9,10 +9,10 @@ using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
 using Newtonsoft.Json;
+using ResiLab.MailFilter.Configuration;
 using ResiLab.MailFilter.Infrastructure;
 using ResiLab.MailFilter.Learning;
 using ResiLab.MailFilter.Learning.Model;
-using ResiLab.MailFilter.Model;
 
 namespace ResiLab.MailFilter {
     public class MailBoxProcessor {

@@ -1,4 +1,4 @@
-﻿namespace ResiLab.MailFilter.Model {
+﻿namespace ResiLab.MailFilter.Configuration {
     public class Rule {
         /// <summary>
         ///     Name of the rule.

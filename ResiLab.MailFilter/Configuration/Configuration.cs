@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ResiLab.MailFilter.Model {
+namespace ResiLab.MailFilter.Configuration {
     public class Configuration {
         /// <summary>
         ///     If logging all rule executions is enabled.

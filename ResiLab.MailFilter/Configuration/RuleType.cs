@@ -1,4 +1,4 @@
-﻿namespace ResiLab.MailFilter.Model {
+﻿namespace ResiLab.MailFilter.Configuration {
     public enum RuleType {
         SenderEquals,
         SenderContains,

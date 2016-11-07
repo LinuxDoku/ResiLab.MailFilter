@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using Microsoft.Framework.Configuration;
 using ResiLab.MailFilter.Infrastructure;
-using ResiLab.MailFilter.Model;
 
 namespace ResiLab.MailFilter {
     public class MailFilterService {
@@ -21,7 +20,7 @@ namespace ResiLab.MailFilter {
 
             // configuration
             var configurationBuilder = new ConfigurationBuilder().AddJsonFile("config.json").Build();
-            var configuration = new Configuration();
+            var configuration = new Configuration.Configuration();
             configurationBuilder.Bind(configuration);
 
             // do the dirty work
