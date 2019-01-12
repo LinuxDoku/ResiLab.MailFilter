@@ -72,7 +72,7 @@ namespace ResiLab.MailFilter {
                     var whiteListFolder = inbox.GetSubfolder(_mailBox.Spam.Whitelist.Folder);
                     whiteListFolder.Open(FolderAccess.ReadOnly);
 
-                    MailBoxFolderAnalyzer.AnalyzeWhitelist(spamTargetFolder, _learningData);
+                    MailBoxFolderAnalyzer.AnalyzeWhitelist(whiteListFolder, _learningData);
                 }
 
                 _learningStorage.Save(_learningData);
