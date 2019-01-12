@@ -43,6 +43,19 @@ To enable the spam protection simply add this to your configuration:
 The target folder is used as the source folder for the learning process and also as the target for
 detected spam messages.
 
+You can also configure a folder as whitelist. Addresses of messages in this folder are not moved to
+spam target folder, even if they are detected as spam based on previously learned rules.
+
+```json
+"Spam": {
+    "EnableSpamProtection": true,
+    "Target": "Spam",
+    "Whitelist": {
+        "Folder": "Done"
+    }
+}
+```
+
 ### Custom Rules
 Custom rules are configured like this in the `Rules` array of the configuration file:
 
@@ -59,6 +72,12 @@ Following rule types are implemented:
 - SenderEquals
 - SenderContains
 - SenderEndsWith
+
+- SenderNameEquals
+- SendernameContains
+- SenderNameBeginsWith
+- SenderNameEndsWith
+
 - SubjectEquals
 - SubjectContains
 - SubjectBeginsWith
@@ -70,12 +89,12 @@ data to generate new rules at runtime in the mailbox processor.
 At the moment the sender address and subject of these mails are used. Some other data 
 is also gathered but not used yet.
 
-This mechanism is self learning, cause when the analyzer matches an message with an already
+This mechanism is self learning, cause when the analyzer matches a message with an already
 known subject it registeres all the other metadata of the mail and generates rules based 
 on them - so for example later mails from the same address or with the same fishing urls 
 are also detected as spam.
 
 To ensure that this mechanism is not removing mails from your inbox which are by persons
-you trust it will later (not yet implemented yet) generate a whitelist based on the already
+you trust it will later (not fully implemented yet) generate a whitelist based on the already
 read and send mails of your mail box. So persons you stay in contact with are not
 blocked by the spam filter.

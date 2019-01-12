@@ -4,6 +4,11 @@
         SenderContains,
         SenderEndsWith,
 
+        SenderNameEquals,
+        SenderNameContains,
+        SenderNameBeginsWith,
+        SenderNameEndsWith,
+
         SubjectEquals,
         SubjectContains,
         SubjectBeginsWith,

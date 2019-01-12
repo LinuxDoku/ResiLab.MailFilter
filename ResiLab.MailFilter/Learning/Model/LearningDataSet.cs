@@ -22,6 +22,11 @@ namespace ResiLab.MailFilter.Learning.Model {
         public List<string> Adresses { get; set; } = new List<string>();
 
         /// <summary>
+        ///     Sender names which are found in the learning data.
+        /// </summary>
+        public List<string> SenderNames { get; set; } = new List<string>();
+
+        /// <summary>
         ///     Urls found in the messages of the learning data.
         /// </summary>
         public List<string> Urls { get; set; } = new List<string>();
@@ -30,5 +35,10 @@ namespace ResiLab.MailFilter.Learning.Model {
         ///     Subjects found in the learning data.
         /// </summary>
         public List<string> Subjects { get; set; } = new List<string>();
+
+        /// <summary>
+        ///     Whitelist of adresses which should not be handled as spam.
+        /// </summary>
+        public List<string> WhitelistAdresses { get; set; } = new List<string>();
     }
 }

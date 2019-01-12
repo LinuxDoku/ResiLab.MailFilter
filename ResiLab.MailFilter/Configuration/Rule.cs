@@ -1,20 +1,8 @@
 ﻿namespace ResiLab.MailFilter.Configuration {
-    public class Rule {
-        /// <summary>
-        ///     Name of the rule.
-        /// </summary>
-        public string RuleName { get; set; }
-
-        /// <summary>
-        ///     What rule logic shoudl be used.
-        /// </summary>
-        public RuleType Type { get; set; }
-
-        /// <summary>
-        ///     Parameter for the rule.
-        /// </summary>
-        public string Value { get; set; }
-
+    /// <summary>
+    ///     MailBox Rule with action description which is executed when the rules matches.
+    /// </summary>
+    public class Rule : RuleBase {
         /// <summary>
         ///     Where the message should be moved when the rule affects the message.
         /// </summary>

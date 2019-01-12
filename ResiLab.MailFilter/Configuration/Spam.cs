@@ -4,7 +4,7 @@
         ///     Enable the spam protection mechanism.
         /// </summary>
         public bool EnableSpamProtection { get; set; } = false;
-
+        
         /// <summary>
         ///     Interval, in which the spam mails are analyzed.
         /// </summary>
@@ -14,5 +14,10 @@
         ///     Target folder for all regocnized spam.
         /// </summary>
         public string Target { get; set; } = "Spam";
+
+        /// <summary>
+        ///     Whitelist configuration.
+        /// </summary>
+        public SpamWhitelist Whitelist { get; set; }
     }
 }

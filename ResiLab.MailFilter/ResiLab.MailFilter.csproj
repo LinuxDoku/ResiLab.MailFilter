@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\RuleBase.cs" />
     <Compile Include="Filter\RuleMatcher.cs" />
     <Compile Include="Infrastructure\Cryptography.cs" />
     <Compile Include="Infrastructure\Extensions\ListExtensions.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Learning\LearningStorage.cs" />
     <Compile Include="Learning\MailBoxFolderAnalyzer.cs" />
     <Compile Include="Learning\Model\LearningDataSet.cs" />
+    <Compile Include="Learning\Model\SpamRule.cs" />
     <Compile Include="Learning\Parser\UrlParser.cs" />
     <Compile Include="Learning\RuleGenerator.cs" />
     <Compile Include="MailBoxProcessor.cs" />

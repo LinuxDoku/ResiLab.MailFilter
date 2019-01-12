@@ -56,13 +56,24 @@ namespace ResiLab.MailFilter {
                 return;
             }
 
+            // load already cached learning data
             _learningData = _learningStorage.Read();
+
             var needToUpdateData = _learningData.LastUpdate < DateTime.Now.Subtract(TimeSpan.FromMinutes(_mailBox.Spam.AnalysisInterval));
             if (needToUpdateData) {
-                var targetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
-                targetFolder.Open(FolderAccess.ReadOnly);
+                // analyze classified spam
+                var spamTargetFolder = inbox.GetSubfolder(_mailBox.Spam.Target);
+                spamTargetFolder.Open(FolderAccess.ReadOnly);
 
-                MailBoxFolderAnalyzer.Analyze(targetFolder, _learningData);
+                MailBoxFolderAnalyzer.Analyze(spamTargetFolder, _learningData);
+
+                // collect data from whitelist
+                if (_mailBox.Spam.Whitelist?.Folder != null) {
+                    var whiteListFolder = inbox.GetSubfolder(_mailBox.Spam.Whitelist.Folder);
+                    whiteListFolder.Open(FolderAccess.ReadOnly);
+
+                    MailBoxFolderAnalyzer.AnalyzeWhitelist(spamTargetFolder, _learningData);
+                }
 
                 _learningStorage.Save(_learningData);
             }
@@ -119,7 +130,25 @@ namespace ResiLab.MailFilter {
         }
 
         private Rule GetMatchingRule(MimeMessage message) {
-            return _rules.FirstOrDefault(rule => RuleMatcher.IsRuleMatching(message, rule));
+            Rule resultRule;
+
+            // use rules configured by the user first
+            resultRule = _rules.FirstOrDefault(
+                rule => rule is GeneratedRule == false && RuleMatcher.IsRuleMatching(message, rule)
+            );
+            
+            // try to find a generated rule when the message is not white listed
+            if (resultRule == null && IsMessageWhitelisted(message) == false) {
+                resultRule = _rules.FirstOrDefault(
+                    rule => rule is GeneratedRule && RuleMatcher.IsRuleMatching(message, rule)
+                );
+            }
+
+            return resultRule;
+        }
+
+        private bool IsMessageWhitelisted(MimeMessage message) {
+            return _learningData.WhitelistAdresses.Contains(message.Sender.Address);
         }
     }
 }

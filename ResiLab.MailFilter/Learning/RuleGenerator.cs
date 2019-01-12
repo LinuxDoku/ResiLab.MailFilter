@@ -20,9 +20,14 @@ namespace ResiLab.MailFilter.Learning {
         public IEnumerable<Rule> Generate() {
             var rules = new List<Rule>();
 
-            // reject email from every address listed in the learnign data
+            // reject email from every address listed in the learning data
             foreach (var address in _learningDataSet.Adresses) {
                 rules.Add(GenerateAddressRule(address));
+            }
+
+            // reject email from these sender names
+            foreach (var senderName in _learningDataSet.SenderNames) {
+                rules.Add(GenerateSenderNameRule(senderName));
             }
 
             // reject mails with this subject
@@ -30,9 +35,9 @@ namespace ResiLab.MailFilter.Learning {
                 rules.Add(GenerateSubjectRule(subject));
             }
 
-            // reject mails containing these links
+            // TODO: reject mails containing these links
             // TODO: think about whitelisting content of mailbox, social media links could cause problems
-
+            
             return rules;
         }
 
@@ -40,12 +45,16 @@ namespace ResiLab.MailFilter.Learning {
             return GenerateRule(RuleType.SenderEquals, address);
         }
 
+        private Rule GenerateSenderNameRule(string senderName) {
+            return GenerateRule(RuleType.SenderNameEquals, senderName);
+        }
+
         private Rule GenerateSubjectRule(string subject) {
             return GenerateRule(RuleType.SubjectEquals, subject);
         }
         
         private Rule GenerateRule(RuleType type, string value) {
-            return new Rule {
+            return new GeneratedRule {
                 Destination = _targetFolder,
                 MarkAsRead = false,
                 RuleName = "Learning-" + Guid.NewGuid(),
