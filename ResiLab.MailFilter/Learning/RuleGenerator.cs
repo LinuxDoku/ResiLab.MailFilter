@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ResiLab.MailFilter.Configuration;
+using ResiLab.MailFilter.Infrastructure;
 using ResiLab.MailFilter.Learning.Model;
 
 namespace ResiLab.MailFilter.Learning {
@@ -54,6 +55,8 @@ namespace ResiLab.MailFilter.Learning {
         }
         
         private Rule GenerateRule(RuleType type, string value) {
+            Performance.Increment(Performance.GeneratedRule);
+
             return new GeneratedRule {
                 Destination = _targetFolder,
                 MarkAsRead = false,

@@ -6,7 +6,6 @@ using Topshelf;
 namespace ResiLab.MailFilter {
     public class Program {
         public static void Main(string[] args) {
-            Logger.Setup();
             AppDomain.CurrentDomain.UnhandledException +=
                 (sender, eventArgs) => {
                     Logger.Error("Unhandled exception occurred!", eventArgs.ExceptionObject as Exception);

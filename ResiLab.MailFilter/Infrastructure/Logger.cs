@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace ResiLab.MailFilter.Infrastructure {
     public static class Logger {
-        public static void Setup() {
+        static Logger() {
             Trace.Listeners.Add(new EventLogTraceListener("ResiLab.MailFilter"));
 
             if (Environment.UserInteractive) {

@@ -11,5 +11,10 @@ namespace ResiLab.MailFilter.Configuration {
         ///     Mailboxes.
         /// </summary>
         public List<MailBox> MailBoxes { get; set; } = new List<MailBox>();
+
+        /// <summary>
+        ///     Configuration of the webservice.
+        /// </summary>
+        public WebServiceConfiguration WebService { get; set; } = new WebServiceConfiguration();
     }
 }

@@ -66,7 +66,7 @@ namespace ResiLab.MailFilter {
                 spamTargetFolder.Open(FolderAccess.ReadOnly);
 
                 MailBoxFolderAnalyzer.Analyze(spamTargetFolder, _learningData);
-
+                
                 // collect data from whitelist
                 if (_mailBox.Spam.Whitelist?.Folder != null) {
                     var whiteListFolder = inbox.GetSubfolder(_mailBox.Spam.Whitelist.Folder);
@@ -101,8 +101,12 @@ namespace ResiLab.MailFilter {
                 foreach (var unreadMessageUid in unreadMessageUids) {
                     var message = inbox.GetMessage(unreadMessageUid);
 
+                    Performance.Increment(Performance.ProcessedMails);
+
                     var matchingRule = GetMatchingRule(message);
                     if (matchingRule != null) {
+                        Performance.Increment(Performance.ProcessedMailsWithRuleMatch);
+
                         if (!toMove.ContainsKey(matchingRule.Destination)) {
                             toMove.Add(matchingRule.Destination, new List<UniqueId>());
                         }
@@ -148,7 +152,12 @@ namespace ResiLab.MailFilter {
         }
 
         private bool IsMessageWhitelisted(MimeMessage message) {
-            return _learningData.WhitelistAdresses.Contains(message.Sender.Address);
+            // messages without sender can not be whitelisted
+            if (message.Sender?.Address == null) {
+                return false;
+            }
+
+            return _learningData.WhitelistAdresses?.Contains(message.Sender.Address) ?? false;
         }
     }
 }
